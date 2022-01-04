@@ -1,7 +1,7 @@
 package com.chartsbot
 
 import com.chartsbot.controlers.{ DefaultPriceRetrieverController, PriceRetrieverController }
-import com.chartsbot.models.sql.{ DefaultPolygonSqlBlocksDAO, SqlBlocksPolygonDAO }
+import com.chartsbot.models.sql.{ DefaultSqlBlocksDAO, SqlBlocksDAO }
 import com.chartsbot.models.web3.{ DefaultOracleDAO, OracleDAO }
 import com.chartsbot.services.{ ConfigProvider, DefaultMySQLConnector, DefaultWeb3Connector, ExecutionProvider, MySQLConnector, Web3Connector }
 import com.google.inject.binder.ScopedBindingBuilder
@@ -17,7 +17,7 @@ class Binder extends AbstractModule {
   def Web3Connector: ScopedBindingBuilder = bind(classOf[Web3Connector]).to(classOf[DefaultWeb3Connector])
   def OracleDAO: ScopedBindingBuilder = bind(classOf[OracleDAO]).to(classOf[DefaultOracleDAO])
   def PriceRetrieverController: ScopedBindingBuilder = bind(classOf[PriceRetrieverController]).to(classOf[DefaultPriceRetrieverController])
-  def SqlBlocksPolygonDAO: ScopedBindingBuilder = bind(classOf[SqlBlocksPolygonDAO]).to(classOf[DefaultPolygonSqlBlocksDAO])
+  def SqlBlocksPolygonDAO: ScopedBindingBuilder = bind(classOf[SqlBlocksDAO]).to(classOf[DefaultSqlBlocksDAO])
   def MySQLConnector: ScopedBindingBuilder = bind(classOf[MySQLConnector]).to(classOf[DefaultMySQLConnector])
   //  def PriceGetterService: ScopedBindingBuilder = bind(classOf[AddressCheckerService]).to(classOf[DefaultAddressCheckerService])
   //  def Web3DAO: ScopedBindingBuilder = bind(classOf[Web3DAO]).to(classOf[DefaultWeb3DAO])

@@ -21,7 +21,7 @@
         </encoder>
     </appender>
 
-    <logger name="com.greytoken" level="INFO"/>
+    <logger name="com.chartsbot" level="INFO"/>
 
     <root level="WARN">
         <appender-ref ref="JSONSTDOUT"/>

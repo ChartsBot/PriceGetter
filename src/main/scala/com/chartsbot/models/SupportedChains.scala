@@ -7,5 +7,7 @@ object SupportedChains extends Enumeration {
   type SupportedChains = Value
 
   val Polygon: models.SupportedChains.Value = Value
+  val Bsc: models.SupportedChains.Value = Value
+  val Eth: models.SupportedChains.Value = Value
 
 }

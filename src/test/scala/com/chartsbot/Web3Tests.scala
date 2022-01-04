@@ -1,6 +1,6 @@
 package com.chartsbot
 
-import com.chartsbot.models.SupportedChains
+import com.chartsbot.models.{ PriceAtBlock, SupportedChains }
 import com.chartsbot.models.web3.OracleDAO
 import com.chartsbot.services.Web3Connector
 import com.typesafe.scalalogging.LazyLogging
@@ -9,7 +9,7 @@ import org.scalatest.matchers.should.Matchers
 import org.web3j.protocol.core.DefaultBlockParameterName
 
 import scala.concurrent.duration.DurationInt
-import scala.concurrent.{Await, ExecutionContext, blocking}
+import scala.concurrent.{ Await, ExecutionContext, blocking }
 
 class Web3Tests extends AnyFeatureSpecLike with Matchers with LazyLogging {
 
@@ -17,10 +17,6 @@ class Web3Tests extends AnyFeatureSpecLike with Matchers with LazyLogging {
   })) {}
 
   implicit val ec: ExecutionContext = Injector.get[ExecutionContext]
-
-
-
-
 
   Feature("Getting prices") {
     val chain = SupportedChains.Polygon
@@ -66,6 +62,14 @@ class Web3Tests extends AnyFeatureSpecLike with Matchers with LazyLogging {
       println(asyncRes)
       syncedRes.toList.sortWith(_.price < _.price) shouldBe asyncRes.sortWith(_.price < _.price)
 
+    }
+
+    Scenario("Just a test") {
+      val block = 19656269
+      val tokenAddy = "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6"
+      val fRes = oracle.getPriceAsync(tokenAddy, block)(chain)
+      val res = Await.result(fRes, 10.seconds)
+      res shouldBe PriceAtBlock(19656269, Some(BigInt("41021187869699527391278")))
     }
 
   }

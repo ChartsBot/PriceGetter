@@ -2,13 +2,14 @@ package com.chartsbot.controlers
 
 import com.chartsbot.models.{ PriceAtBlock, PriceAtTimestamp }
 import com.chartsbot.models.SupportedChains.SupportedChains
-import com.chartsbot.models.sql.{ SqlBlocksEthDAO, SqlBlocksPolygonDAO }
+import com.chartsbot.models.sql.{ SqlBlocksDAO }
 import com.chartsbot.models.web3.OracleDAO
 import com.chartsbot.services.Web3Connector
 import com.typesafe.scalalogging.LazyLogging
 
 import javax.inject.{ Inject, Singleton }
 import scala.concurrent.{ ExecutionContext, Future }
+import scala.util.{ Failure, Success }
 
 trait PriceRetrieverController {
 
@@ -19,16 +20,12 @@ trait PriceRetrieverController {
 }
 
 @Singleton
-class DefaultPriceRetrieverController @Inject() (oracleDAO: OracleDAO, sqlBlocksPolygonDAO: SqlBlocksPolygonDAO, implicit val ec: ExecutionContext) extends PriceRetrieverController with LazyLogging {
+class DefaultPriceRetrieverController @Inject() (oracleDAO: OracleDAO, sqlBlocksDAO: SqlBlocksDAO, implicit val ec: ExecutionContext) extends PriceRetrieverController with LazyLogging {
 
   override def handleTimestampBasedRequest(timestamps: List[Int], token: String)(chain: SupportedChains): Future[List[Either[String, PriceAtTimestamp]]] = {
 
-    val selectedDao = chain match {
-      case com.chartsbot.models.SupportedChains.Polygon => sqlBlocksPolygonDAO
-    }
-
     val a = for (timestamp <- timestamps) yield {
-      val r = selectedDao.getClosest(timestamp).map {
+      val r = sqlBlocksDAO.getClosest(timestamp)(chain).map {
         case Left(value) =>
           Future.successful(Left(s"Error getting closest block for timestamp ${timestamp}: ${value.errorMessage}."))
         case Right(block) =>

@@ -1,22 +1,22 @@
 package com.chartsbot.services.scalatra
 
-import com.typesafe.config.Config
 import com.typesafe.scalalogging.LazyLogging
-import org.json4s.{DefaultFormats, Formats}
+import org.json4s.{ DefaultFormats, Formats }
 import org.scalatra._
 import org.scalatra.json.NativeJsonSupport
 import org.web3j.crypto.WalletUtils._
 
-import javax.inject.{Inject, Singleton}
+import javax.inject.{ Inject, Singleton }
 import scala.concurrent.ExecutionContext
 import com.chartsbot.Util.createServerError
 import com.chartsbot.controlers.PriceRetrieverController
-import com.chartsbot.models.{Elements, SupportedChains}
+import com.chartsbot.models.SupportedChains.SupportedChains
+import com.chartsbot.models.{ Elements, SupportedChains }
 
-import scala.util.{Failure, Success, Try}
+import scala.util.{ Failure, Success, Try }
 
 @Singleton
-class ApiPrice @Inject() (conf: Config, priceRetrieverController: PriceRetrieverController, implicit val ec: ExecutionContext) extends ScalatraServlet
+class ApiPrice @Inject() (priceRetrieverController: PriceRetrieverController, implicit val ec: ExecutionContext) extends ScalatraServlet
   with FutureSupport with NativeJsonSupport with LazyLogging {
 
   // Sets up automatic case class to JSON output serialization
@@ -28,12 +28,30 @@ class ApiPrice @Inject() (conf: Config, priceRetrieverController: PriceRetriever
     contentType = formats("json")
   }
 
-  logger.info("Wassup")
+  def paramsToString: String = {
+    params.toList.map(a => a._1 + " -> " + a._2).toString()
+  }
 
   // post /polygon/prices?address=fjeihgr&timeType=timestamp
   post("/polygon") {
-    logger.info(s"Request /api/v1/prices/polygon}")
+    logger.info(s"Request /api/v1/prices/polygon/${paramsToString}")
     val chain = SupportedChains.Polygon
+    handleQuery(chain)
+  }
+
+  post("/bsc") {
+    logger.info(s"Request /api/v1/prices/bsc/${paramsToString}")
+    val chain = SupportedChains.Bsc
+    handleQuery(chain)
+  }
+
+  post("/eth") {
+    logger.info(s"Request /api/v1/prices/eth/${paramsToString}")
+    val chain = SupportedChains.Eth
+    handleQuery(chain)
+  }
+
+  def handleQuery(chain: SupportedChains): Object = {
     val optionTimeType = params.get("timeType")
     val optionAddress = params.get("address")
     val maybeTimes = Try(request.body.split(",").map(_.toInt).toList)

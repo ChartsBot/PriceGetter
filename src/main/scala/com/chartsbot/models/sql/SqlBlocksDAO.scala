@@ -1,5 +1,6 @@
 package com.chartsbot.models.sql
 
+import com.chartsbot.models.SupportedChains.SupportedChains
 import com.chartsbot.services.MySQLConnector
 import com.github.mauricio.async.db.mysql.exceptions.MySQLException
 import com.github.mauricio.async.db.mysql.message.server.ErrorMessage
@@ -9,6 +10,14 @@ import io.getquill.{ CamelCase, MysqlAsyncContext, Ord }
 import javax.inject.{ Inject, Singleton }
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.{ Failure, Success }
+
+trait SqlBlocksQueries {
+
+  def getLast: Future[Either[ErrorMessage, List[SqlBlock]]]
+
+  def getClosest(ts: Int): Future[Either[ErrorMessage, List[SqlBlock]]]
+
+}
 
 object SqlQueriesUtil extends LazyLogging {
   def transformFuture[T](future: Future[Right[Nothing, T]], errorLog: String)(implicit ec: ExecutionContext): Future[Either[ErrorMessage, T]] = {
@@ -26,7 +35,7 @@ object SqlQueriesUtil extends LazyLogging {
 }
 
 @Singleton
-class SqlBlocksEthQueries @Inject() (val sqlConnector: MySQLConnector, implicit val ec: ExecutionContext) extends LazyLogging {
+class SqlBlocksEthQueries @Inject() (val sqlConnector: MySQLConnector, implicit val ec: ExecutionContext) extends SqlBlocksQueries with LazyLogging {
 
   val ctx: MysqlAsyncContext[CamelCase.type] = sqlConnector.ctx
 
@@ -56,7 +65,7 @@ class SqlBlocksEthQueries @Inject() (val sqlConnector: MySQLConnector, implicit 
 }
 
 @Singleton
-class SqlBlocksPolygonQueries @Inject() (val sqlConnector: MySQLConnector, implicit val ec: ExecutionContext) extends LazyLogging {
+class SqlBlocksPolygonQueries @Inject() (val sqlConnector: MySQLConnector, implicit val ec: ExecutionContext) extends SqlBlocksQueries with LazyLogging {
 
   val ctx: MysqlAsyncContext[CamelCase.type] = sqlConnector.ctx
 
@@ -85,36 +94,57 @@ class SqlBlocksPolygonQueries @Inject() (val sqlConnector: MySQLConnector, impli
 
 }
 
-trait SqlBlocksEthDAO {
+@Singleton
+class SqlBlocksBscQueries @Inject() (val sqlConnector: MySQLConnector, implicit val ec: ExecutionContext) extends SqlBlocksQueries with LazyLogging {
 
-  def getLastBlock: Future[Either[ErrorMessage, List[SqlBlock]]]
+  val ctx: MysqlAsyncContext[CamelCase.type] = sqlConnector.ctx
 
-  def getClosest(ts: Int): Future[Either[ErrorMessage, List[SqlBlock]]]
+  import ctx._
+
+  implicit val eventSchemaMeta: SchemaMeta[SqlBlock] = schemaMeta[SqlBlock]("BscBlocks")
+
+  def getLast: Future[Either[ErrorMessage, List[SqlBlock]]] = {
+
+    val maxQuery = quote(query[SqlBlock].sortBy(b => b.number)(Ord.descNullsLast).take(1))
+
+    val f = run(maxQuery).map(Right(_))
+    SqlQueriesUtil.transformFuture(f, "SQL error getting last block ")
+  }
+
+  def getClosest(ts: Int): Future[Either[ErrorMessage, List[SqlBlock]]] = {
+
+    val abs = quote {
+      (a: Int) => infix"ABS($a)".as[Int]
+    }
+
+    val closestQuery = quote(query[SqlBlock].sortBy(b => abs(b.blockTimestamp - lift(ts))).take(1))
+    val f = run(closestQuery).map(Right(_))
+    SqlQueriesUtil.transformFuture(f, s"SQL error getting closest block to ts:$ts")
+  }
 
 }
 
-trait SqlBlocksPolygonDAO {
+trait SqlBlocksDAO {
 
-  def getLastBlock: Future[Either[ErrorMessage, List[SqlBlock]]]
+  def getLastBlock(chain: SupportedChains): Future[Either[ErrorMessage, List[SqlBlock]]]
 
-  def getClosest(ts: Int): Future[Either[ErrorMessage, List[SqlBlock]]]
+  def getClosest(ts: Int)(chain: SupportedChains): Future[Either[ErrorMessage, List[SqlBlock]]]
 
 }
 
 @Singleton
-class DefaultEthSqlBlocksDAO @Inject() (val sqlBlocks: SqlBlocksEthQueries, implicit val ec: ExecutionContext) extends SqlBlocksEthDAO with LazyLogging {
+class DefaultSqlBlocksDAO @Inject() (val sqlBlocksEthQueries: SqlBlocksEthQueries, val sqlBlocksPolygonQueries: SqlBlocksPolygonQueries, val sqlBlocksBscQueries: SqlBlocksBscQueries, implicit val ec: ExecutionContext) extends SqlBlocksDAO with LazyLogging {
 
-  def getLastBlock: Future[Either[ErrorMessage, List[SqlBlock]]] = sqlBlocks.getLast
+  private def selectChainSqlQueries(chain: SupportedChains): SqlBlocksQueries = {
+    chain match {
+      case com.chartsbot.models.SupportedChains.Polygon => sqlBlocksPolygonQueries
+      case com.chartsbot.models.SupportedChains.Bsc => sqlBlocksBscQueries
+      case com.chartsbot.models.SupportedChains.Eth => sqlBlocksEthQueries
+    }
+  }
 
-  def getClosest(ts: Int): Future[Either[ErrorMessage, List[SqlBlock]]] = sqlBlocks.getClosest(ts)
+  def getLastBlock(chain: SupportedChains): Future[Either[ErrorMessage, List[SqlBlock]]] = selectChainSqlQueries(chain).getLast
 
-}
-
-@Singleton
-class DefaultPolygonSqlBlocksDAO @Inject() (val sqlBlocks: SqlBlocksPolygonQueries, implicit val ec: ExecutionContext) extends SqlBlocksPolygonDAO with LazyLogging {
-
-  def getLastBlock: Future[Either[ErrorMessage, List[SqlBlock]]] = sqlBlocks.getLast
-
-  def getClosest(ts: Int): Future[Either[ErrorMessage, List[SqlBlock]]] = sqlBlocks.getClosest(ts)
+  def getClosest(ts: Int)(chain: SupportedChains): Future[Either[ErrorMessage, List[SqlBlock]]] = selectChainSqlQueries(chain).getClosest(ts)
 
 }

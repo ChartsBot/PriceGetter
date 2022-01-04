@@ -4,21 +4,21 @@
     <modelVersion>4.0.0</modelVersion>
 
     <!-- info -->
-    <groupId>com.greytoken</groupId>
-    <artifactId>GreyBackendAddressChecker</artifactId>
+    <groupId>com.chartsbot</groupId>
+    <artifactId>price-getter</artifactId>
     <version>0.1.0</version>
     <packaging>jar</packaging>
 
     <organization>
-        <name>GreyToken</name>
-        <url>https://greytoken.io/</url>
+        <name>ChartsBot</name>
+        <url>http://thefomobot.com/</url>
     </organization>
     <developers>
         <developer>
             <name>Ben</name>
             <email>benoit.george@inosia.fr</email>
-            <organization>GreyToken</organization>
-            <organizationUrl>https://greytoken.io//</organizationUrl>
+            <organization>ChartsBot</organization>
+            <organizationUrl>http://thefomobot.com/</organizationUrl>
         </developer>
     </developers>
 
@@ -197,6 +197,14 @@
 
         <!-- /Scalatra -->
 
+        <!-- https://mvnrepository.com/artifact/com.softwaremill.retry/retry -->
+        <dependency>
+            <groupId>com.softwaremill.retry</groupId>
+            <artifactId>retry_2.12</artifactId>
+            <version>0.3.3</version>
+        </dependency>
+
+
         <!-- Javax servlet -->
 
         <dependency>
@@ -283,6 +291,15 @@
             <groupId>com.softwaremill.sttp.client3</groupId>
             <artifactId>async-http-client-backend-future_2.12</artifactId>
             <version>${sttp-async-http-client-backend-future_2.12.version}</version>
+        </dependency>
+
+
+        <!-- Lombok @synchronoized annotations for custom java web3j websocket -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.20</version>
+            <scope>provided</scope>
         </dependency>
 
         <!--        &lt;!&ndash; https://mvnrepository.com/artifact/org.apache.sshd/sshd-core &ndash;&gt;-->
@@ -499,7 +516,7 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
-                            <mainClass>com.greytoken.Service</mainClass>
+                            <mainClass>com.chartsbot.Service</mainClass>
                             <useUniqueVersions>false</useUniqueVersions>
                         </manifest>
                     </archive>
@@ -531,7 +548,7 @@
                             <arguments>
                                 <argument>-classpath</argument>
                                 <classpath />
-                                <argument>com.greytoken.Service</argument>
+                                <argument>com.chartsbot.Service</argument>
                             </arguments>
                         </configuration>
                     </execution>
@@ -547,7 +564,7 @@
                             <arguments>
                                 <argument>-classpath</argument>
                                 <classpath />
-                                <argument>com.greytoken.Service</argument>
+                                <argument>com.chartsbot.Service</argument>
                                 <!--<argument>${TestClient.user}</argument>-->
                             </arguments>
                         </configuration>

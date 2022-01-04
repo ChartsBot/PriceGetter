@@ -69,7 +69,6 @@ class IntegrationTest extends AnyFeatureSpecLike with Matchers with LazyLogging 
         }
       }
 
-
     }
 
   }

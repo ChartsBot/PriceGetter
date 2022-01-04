@@ -25,7 +25,18 @@ object ConfigPaths {
     final val WEB3_POLYGON_CONNECTION_URL = "web3.polygon.connection.url"
     final val WEB3_POLYGON_CONNECTION_WS = "web3.polygon.connection.websocketUrl"
     final val WEB3_POLYGON_ORACLE_ADDRESS = "web3.polygon.price-oracle.address"
+  }
 
+  trait Web3BscPaths {
+    final val WEB3_BSC_CONNECTION_URL = "web3.bsc.connection.url"
+    final val WEB3_BSC_CONNECTION_WS = "web3.bsc.connection.websocketUrl"
+    final val WEB3_BSC_ORACLE_ADDRESS = "web3.bsc.price-oracle.address"
+  }
+
+  trait Web3EthPaths {
+    final val WEB3_ETH_CONNECTION_URL = "web3.eth.connection.url"
+    final val WEB3_ETH_CONNECTION_WS = "web3.eth.connection.websocketUrl"
+    final val WEB3_ETH_ORACLE_ADDRESS = "web3.eth.price-oracle.address"
   }
 
   trait SqlPaths {
