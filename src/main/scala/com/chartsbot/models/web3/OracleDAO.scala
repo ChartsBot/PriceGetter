@@ -1,6 +1,6 @@
 package com.chartsbot.models.web3
 
-import com.chartsbot.config.ConfigPaths.{ Web3BscPaths, Web3EthPaths, Web3Paths, Web3PolygonPaths }
+import com.chartsbot.config.ConfigPaths.{ Web3BscPaths, Web3EthPaths, Web3FtmPaths, Web3Paths, Web3PolygonPaths }
 import com.chartsbot.contracts.OracleMainnet
 import com.chartsbot.models.PriceAtBlock
 import com.chartsbot.models.SupportedChains.SupportedChains
@@ -18,19 +18,32 @@ import javax.inject.{ Inject, Singleton }
 import scala.compat.java8.FutureConverters.CompletionStageOps
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ ExecutionContext, Future }
-import scala.util.Failure
 
+/**
+ * Default Oracle DAO that retrieves the price of a given token at the given block.
+ * Communicates with the deployed price getter contract on the given chain.
+ */
 trait OracleDAO {
 
+  /**
+   * Same as getPriceAsync but for a list of blocks.
+   */
   def getPricesAsync(tokenAddress: String, blocks: List[Int])(chain: SupportedChains): Future[List[PriceAtBlock]]
 
+  /**
+   * Method that returns a PriceAtBlock object representing the price (in USD) of a token at a given block.
+   * @param tokenAddress Checksummed address of the token.
+   * @param block Block must be older than when the contract was deployed. TODO: add a verification that the block queried meet this criteria
+   * @param chain Chain on which the token lives.
+   * @return A future of a PriceAtBlock object. Price is None if the query failed.
+   */
   def getPriceAsync(tokenAddress: String, block: Int)(chain: SupportedChains): Future[PriceAtBlock]
 
 }
 
 @Singleton
 class DefaultOracleDAO @Inject() (web3Connector: Web3Connector, conf: Config, implicit val ec: ExecutionContext) extends OracleDAO
-  with Web3PolygonPaths with Web3BscPaths with Web3EthPaths with Web3Paths with LazyLogging {
+  with Web3PolygonPaths with Web3BscPaths with Web3EthPaths with Web3FtmPaths with Web3Paths with LazyLogging {
 
   val walletPwd: String = conf.getString(WEB3_PWD)
   val walletPath: String = conf.getString(WEB3_WALLET_PATH)
@@ -60,6 +73,13 @@ class DefaultOracleDAO @Inject() (web3Connector: Web3Connector, conf: Config, im
     gasProvider
   )
 
+  val ftmOracleContract: OracleMainnet = OracleMainnet.load(
+    conf.getString(WEB3_FTM_ORACLE_ADDRESS),
+    web3Connector.w3Ftm,
+    creds,
+    gasProvider
+  )
+
   override def getPricesAsync(tokenAddress: String, blocks: List[Int])(chain: SupportedChains): Future[List[PriceAtBlock]] = {
 
     val res = blocks.map { block =>
@@ -77,7 +97,7 @@ class DefaultOracleDAO @Inject() (web3Connector: Web3Connector, conf: Config, im
 
   override def getPriceAsync(tokenAddress: String, block: Int)(chain: SupportedChains): Future[PriceAtBlock] = synchronized {
 
-    val blockParam = new DefaultBlockParameterNumber(block)
+    val blockParam = new DefaultBlockParameterNumber(Int.int2long(block))
     selectOracleBasedOnName(chain).setDefaultBlockParameter(blockParam)
     val success = Success[BigInteger](_ != null)
     val fRetried = retry.Backoff(5, 50.milliseconds).apply(
@@ -90,7 +110,8 @@ class DefaultOracleDAO @Inject() (web3Connector: Web3Connector, conf: Config, im
           Future.failed(e)
       }
     )(success, ec)
-    Thread.sleep(10) // Need some sleep to make sure that the block param is correctly set
+    // TODO: once web3j allows block params to be passed as an argument and not be set globally, remove the Thread.sleep
+    Thread.sleep(10) // Need some sleep to make sure that the block param is correctly set. Cf TODO
     fRetried.map(priceBlock =>
       if (priceBlock == BigInteger.ZERO) PriceAtBlock(block, None) else PriceAtBlock(block, Some(priceBlock)))
   }
@@ -100,6 +121,7 @@ class DefaultOracleDAO @Inject() (web3Connector: Web3Connector, conf: Config, im
       case com.chartsbot.models.SupportedChains.Polygon => polygonOracleContract
       case com.chartsbot.models.SupportedChains.Bsc => bscOracleContract
       case com.chartsbot.models.SupportedChains.Eth => ethOracleContract
+      case com.chartsbot.models.SupportedChains.Ftm => ftmOracleContract
     }
   }
 

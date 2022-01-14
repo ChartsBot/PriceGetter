@@ -13,13 +13,28 @@ import scala.util.{ Failure, Success }
 
 trait SqlBlocksQueries {
 
+  /**
+   *
+   * @return The last indexed block on the database
+   */
   def getLast: Future[Either[ErrorMessage, List[SqlBlock]]]
 
+  /**
+   * Get the block whose timestamp is the closest to the given ts
+   */
   def getClosest(ts: Int): Future[Either[ErrorMessage, List[SqlBlock]]]
 
 }
 
 object SqlQueriesUtil extends LazyLogging {
+  /**
+   * Simple helper that makes working with Quill easier
+   * @param future Future on which to operate
+   * @param errorLog Error to append in case of an error
+   * @param ec Execution context
+   * @tparam T Type of what's in the future
+   * @return A transformed future.
+   */
   def transformFuture[T](future: Future[Right[Nothing, T]], errorLog: String)(implicit ec: ExecutionContext): Future[Either[ErrorMessage, T]] = {
 
     future transformWith {
@@ -41,6 +56,7 @@ class SqlBlocksEthQueries @Inject() (val sqlConnector: MySQLConnector, implicit 
 
   import ctx._
 
+  // TODO: find a way to make Quill work with dynamic entity names, would avoid creating a new class for each table.
   implicit val eventSchemaMeta: SchemaMeta[SqlBlock] = schemaMeta[SqlBlock]("EthBlocks")
 
   def getLast: Future[Either[ErrorMessage, List[SqlBlock]]] = {
@@ -124,6 +140,36 @@ class SqlBlocksBscQueries @Inject() (val sqlConnector: MySQLConnector, implicit 
 
 }
 
+@Singleton
+class SqlBlocksFtmQueries @Inject() (val sqlConnector: MySQLConnector, implicit val ec: ExecutionContext) extends SqlBlocksQueries with LazyLogging {
+
+  val ctx: MysqlAsyncContext[CamelCase.type] = sqlConnector.ctx
+
+  import ctx._
+
+  implicit val eventSchemaMeta: SchemaMeta[SqlBlock] = schemaMeta[SqlBlock]("FtmBlocks")
+
+  def getLast: Future[Either[ErrorMessage, List[SqlBlock]]] = {
+
+    val maxQuery = quote(query[SqlBlock].sortBy(b => b.number)(Ord.descNullsLast).take(1))
+
+    val f = run(maxQuery).map(Right(_))
+    SqlQueriesUtil.transformFuture(f, "SQL error getting last block ")
+  }
+
+  def getClosest(ts: Int): Future[Either[ErrorMessage, List[SqlBlock]]] = {
+
+    val abs = quote {
+      (a: Int) => infix"ABS($a)".as[Int]
+    }
+
+    val closestQuery = quote(query[SqlBlock].sortBy(b => abs(b.blockTimestamp - lift(ts))).take(1))
+    val f = run(closestQuery).map(Right(_))
+    SqlQueriesUtil.transformFuture(f, s"SQL error getting closest block to ts:$ts")
+  }
+
+}
+
 trait SqlBlocksDAO {
 
   def getLastBlock(chain: SupportedChains): Future[Either[ErrorMessage, List[SqlBlock]]]
@@ -133,13 +179,14 @@ trait SqlBlocksDAO {
 }
 
 @Singleton
-class DefaultSqlBlocksDAO @Inject() (val sqlBlocksEthQueries: SqlBlocksEthQueries, val sqlBlocksPolygonQueries: SqlBlocksPolygonQueries, val sqlBlocksBscQueries: SqlBlocksBscQueries, implicit val ec: ExecutionContext) extends SqlBlocksDAO with LazyLogging {
+class DefaultSqlBlocksDAO @Inject() (val sqlBlocksEthQueries: SqlBlocksEthQueries, val sqlBlocksPolygonQueries: SqlBlocksPolygonQueries, val sqlBlocksBscQueries: SqlBlocksBscQueries, val sqlBlocksFtmQueries: SqlBlocksFtmQueries, implicit val ec: ExecutionContext) extends SqlBlocksDAO with LazyLogging {
 
   private def selectChainSqlQueries(chain: SupportedChains): SqlBlocksQueries = {
     chain match {
       case com.chartsbot.models.SupportedChains.Polygon => sqlBlocksPolygonQueries
       case com.chartsbot.models.SupportedChains.Bsc => sqlBlocksBscQueries
       case com.chartsbot.models.SupportedChains.Eth => sqlBlocksEthQueries
+      case com.chartsbot.models.SupportedChains.Ftm => sqlBlocksFtmQueries
     }
   }
 

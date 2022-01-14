@@ -12,7 +12,7 @@ object Service extends InjectorHelper(List(new Binder)) {
 
     val environmentVars = System.getenv().asScala
     val r = for ((k, v) <- environmentVars) yield s"envVar: $k, value: $v"
-    logger.info(r.toList.mkString(", "))
+    logger.debug(r.toList.mkString(", "))
 
     get[ChartsBotWebserverApi].start()
   }
@@ -23,19 +23,5 @@ object Service extends InjectorHelper(List(new Binder)) {
 class ChartsBotWebserverApi @Inject() (jettyServer: DefaultJettyServer) {
   def start(): Unit = {
     jettyServer.start()
-  }
-}
-
-@Singleton
-class ReconnectWeb3IfNeeded @Inject() (web3Connector: Web3Connector) {
-  def run(): Unit = {
-    val ex = new ScheduledThreadPoolExecutor(1)
-    val task = new Runnable {
-      def run() = {
-        ""
-      }
-    }
-    val f = ex.scheduleAtFixedRate(task, 60, 30, TimeUnit.SECONDS)
-    f.cancel(false)
   }
 }

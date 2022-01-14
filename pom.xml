@@ -335,6 +335,17 @@
     <!-- dependencies -->
 
     <build>
+
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <excludes>
+                    <exclude>application.local.conf</exclude>
+                </excludes>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+
         <sourceDirectory>src/main/scala</sourceDirectory>
         <plugins>
 

@@ -12,6 +12,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 
+/**
+ * Custom WebSocketClient that handles reconnections
+ */
 @Slf4j
 public class CustomWebSocketClient extends WebSocketClient {
     public interface  ReconnectHandlerInterface{

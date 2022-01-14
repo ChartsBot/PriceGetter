@@ -39,6 +39,12 @@ object ConfigPaths {
     final val WEB3_ETH_ORACLE_ADDRESS = "web3.eth.price-oracle.address"
   }
 
+  trait Web3FtmPaths {
+    final val WEB3_FTM_CONNECTION_URL = "web3.ftm.connection.url"
+    final val WEB3_FTM_CONNECTION_WS = "web3.ftm.connection.websocketUrl"
+    final val WEB3_FTM_ORACLE_ADDRESS = "web3.ftm.price-oracle.address"
+  }
+
   trait SqlPaths {
     final val MYSQL_CONNECTION_PATH = "sql.connection.path"
     final val MYSQL_CONNECTION_USERNAME = "sql.connection.username"

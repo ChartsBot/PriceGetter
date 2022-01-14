@@ -19,9 +19,6 @@ class Binder extends AbstractModule {
   def PriceRetrieverController: ScopedBindingBuilder = bind(classOf[PriceRetrieverController]).to(classOf[DefaultPriceRetrieverController])
   def SqlBlocksPolygonDAO: ScopedBindingBuilder = bind(classOf[SqlBlocksDAO]).to(classOf[DefaultSqlBlocksDAO])
   def MySQLConnector: ScopedBindingBuilder = bind(classOf[MySQLConnector]).to(classOf[DefaultMySQLConnector])
-  //  def PriceGetterService: ScopedBindingBuilder = bind(classOf[AddressCheckerService]).to(classOf[DefaultAddressCheckerService])
-  //  def Web3DAO: ScopedBindingBuilder = bind(classOf[Web3DAO]).to(classOf[DefaultWeb3DAO])
-  //  def BlockIndexerService: ScopedBindingBuilder = bind(classOf[BlockIndexerService]).to(classOf[DefaultBlockIndexerService])
 
   override def configure(): Unit = {
     Config
@@ -31,9 +28,6 @@ class Binder extends AbstractModule {
     PriceRetrieverController
     SqlBlocksPolygonDAO
     MySQLConnector
-    //    PriceGetterService
-    //    Web3DAO
-    //    BlockIndexerService
   }
 
 }

@@ -11,7 +11,7 @@ class ScalatraBootstrap extends LifeCycle with ScalatraPaths {
 
   override def init(context: ServletContext): Unit = {
 
-    context.setInitParameter("org.scalatra.environment", "development")
+    context.setInitParameter("org.scalatra.environment", "production")
 
     context.mount(apiPrice, "/prices", "PricesApi")
   }

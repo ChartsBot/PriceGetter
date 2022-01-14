@@ -51,6 +51,17 @@ class ApiPrice @Inject() (priceRetrieverController: PriceRetrieverController, im
     handleQuery(chain)
   }
 
+  post("/ftm") {
+    logger.info(s"Request /api/v1/prices/eth/${paramsToString}")
+    val chain = SupportedChains.Ftm
+    handleQuery(chain)
+  }
+
+  /**
+   * Handle the GET query.
+   * GET query should have a timeType and an address
+   * Calls the method corresponding to the chain given in input.
+   */
   def handleQuery(chain: SupportedChains): Object = {
     val optionTimeType = params.get("timeType")
     val optionAddress = params.get("address")
