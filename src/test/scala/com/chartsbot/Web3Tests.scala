@@ -32,13 +32,16 @@ class Web3Tests extends AnyFeatureSpecLike with Matchers with LazyLogging {
       println(res)
     }
 
-    Scenario("Getting multiple price points of a token") {
+    Scenario("Getting multiple price points of a token async") {
 
-      val blocks = (19347918 to 19447918).filter(p => p % 1000 == 0)
+      val blocks = (19547919 to 19647919).filter(p => p % 1000 == 0)
 
+      val t1 = System.currentTimeMillis()
       val fRes = oracle.getPricesAsync(gfarm2Addy, blocks.toList)(chain)
-      val res = Await.result(fRes, 10.seconds)
+      val res = Await.result(fRes, 100.seconds)
+      val t2 = System.currentTimeMillis()
       println(res)
+      println(s"Took ${t2 - t1} ms to fetch ${res.size} values")
 
     }
 
@@ -49,14 +52,14 @@ class Web3Tests extends AnyFeatureSpecLike with Matchers with LazyLogging {
       logger.info("Starting getting synced results")
       val syncedRes = for (block <- blocks) yield {
         val fRes = oracle.getPriceAsync(gfarm2Addy, block)(chain)
-        Await.result(fRes, 10.seconds)
+        Await.result(fRes, 100.seconds)
       }
       logger.info("Done getting synced results")
 
       println(syncedRes.toList)
       logger.info("Starting getting asynced results")
       val fAsyncedResults = oracle.getPricesAsync(gfarm2Addy, blocks.toList)(chain)
-      val asyncRes = Await.result(fAsyncedResults, 10.seconds)
+      val asyncRes = Await.result(fAsyncedResults, 100.seconds)
       logger.info("Done getting asynced results")
 
       println(asyncRes)

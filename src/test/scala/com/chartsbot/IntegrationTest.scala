@@ -40,6 +40,7 @@ class IntegrationTest extends AnyFeatureSpecLike with Matchers with LazyLogging 
     }
 
     Scenario("A lot of data blz") {
+      val t0 = System.currentTimeMillis()
       val tss = (1624442857 to 1632932383).filter(p => p % 100000 == 0).toList
       println(tss.size)
       val fRes = priceRetrieverController.handleTimestampBasedRequest(tss, wbtc2Addy)(chain)
@@ -51,7 +52,8 @@ class IntegrationTest extends AnyFeatureSpecLike with Matchers with LazyLogging 
           case Right(value) => println(value)
         }
       }
-
+      val t1 = System.currentTimeMillis()
+      println(s"Took ${t1 - t0} ms to process all this")
     }
 
     Scenario("Stress test") {

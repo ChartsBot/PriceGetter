@@ -20,23 +20,23 @@ import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ ExecutionContext, Future }
 
 /**
- * Default Oracle DAO that retrieves the price of a given token at the given block.
- * Communicates with the deployed price getter contract on the given chain.
- */
+  * Default Oracle DAO that retrieves the price of a given token at the given block.
+  * Communicates with the deployed price getter contract on the given chain.
+  */
 trait OracleDAO {
 
   /**
-   * Same as getPriceAsync but for a list of blocks.
-   */
+    * Same as getPriceAsync but for a list of blocks.
+    */
   def getPricesAsync(tokenAddress: String, blocks: List[Int])(chain: SupportedChains): Future[List[PriceAtBlock]]
 
   /**
-   * Method that returns a PriceAtBlock object representing the price (in USD) of a token at a given block.
-   * @param tokenAddress Checksummed address of the token.
-   * @param block Block must be older than when the contract was deployed. TODO: add a verification that the block queried meet this criteria
-   * @param chain Chain on which the token lives.
-   * @return A future of a PriceAtBlock object. Price is None if the query failed.
-   */
+    * Method that returns a PriceAtBlock object representing the price (in USD) of a token at a given block.
+    * @param tokenAddress Checksummed address of the token.
+    * @param block Block must be older than when the contract was deployed. TODO: add a verification that the block queried meet this criteria
+    * @param chain Chain on which the token lives.
+    * @return A future of a PriceAtBlock object. Price is None if the query failed.
+    */
   def getPriceAsync(tokenAddress: String, block: Int)(chain: SupportedChains): Future[PriceAtBlock]
 
 }
@@ -95,8 +95,10 @@ class DefaultOracleDAO @Inject() (web3Connector: Web3Connector, conf: Config, im
 
   }
 
+  // synchronized otherwise requests are messed up somehow
   override def getPriceAsync(tokenAddress: String, block: Int)(chain: SupportedChains): Future[PriceAtBlock] = synchronized {
 
+    logger.debug(s"getting price for block $block")
     val blockParam = new DefaultBlockParameterNumber(Int.int2long(block))
     selectOracleBasedOnName(chain).setDefaultBlockParameter(blockParam)
     val success = Success[BigInteger](_ != null)

@@ -58,10 +58,10 @@ class ApiPrice @Inject() (priceRetrieverController: PriceRetrieverController, im
   }
 
   /**
-   * Handle the GET query.
-   * GET query should have a timeType and an address
-   * Calls the method corresponding to the chain given in input.
-   */
+    * Handle the GET query.
+    * GET query should have a timeType and an address
+    * Calls the method corresponding to the chain given in input.
+    */
   def handleQuery(chain: SupportedChains): Object = {
     val optionTimeType = params.get("timeType")
     val optionAddress = params.get("address")

@@ -3,8 +3,8 @@ package com.chartsbot.models
 import com.chartsbot.models
 
 /**
- * Enum of all supported blockchains.
- */
+  * Enum of all supported blockchains.
+  */
 object SupportedChains extends Enumeration {
 
   type SupportedChains = Value
