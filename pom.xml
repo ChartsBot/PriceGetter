@@ -294,6 +294,48 @@
         </dependency>
 
 
+        <dependency>
+            <groupId>com.typesafe.slick</groupId>
+            <artifactId>slick_2.12</artifactId>
+            <version>3.3.3</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>6.0.6</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.typesafe.slick</groupId>
+            <artifactId>slick-codegen_2.12</artifactId>
+            <version>3.3.3</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>com.typesafe.slick</groupId>
+            <artifactId>slick-hikaricp_2.12</artifactId>
+            <version>3.3.3</version>
+        </dependency>
+
+        <!--        &lt;!&ndash; https://mvnrepository.com/artifact/com.typesafe.akka/akka-actor &ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>com.typesafe.akka</groupId>-->
+<!--            <artifactId>akka-actor_2.12</artifactId>-->
+<!--            <version>2.5.32</version>-->
+<!--        </dependency>-->
+
+<!--        &lt;!&ndash; https://mvnrepository.com/artifact/net.databinder.dispatch/dispatch-core &ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>net.databinder.dispatch</groupId>-->
+<!--            <artifactId>dispatch-core_2.12</artifactId>-->
+<!--            <version>0.13.4</version>-->
+<!--        </dependency>-->
+
+
+
         <!-- Lombok @synchronoized annotations for custom java web3j websocket -->
         <dependency>
             <groupId>org.projectlombok</groupId>

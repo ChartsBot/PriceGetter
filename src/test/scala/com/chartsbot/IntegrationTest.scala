@@ -29,7 +29,7 @@ class IntegrationTest extends AnyFeatureSpecLike with Matchers with LazyLogging 
 
       val shouldBeBlock = 19646288
 
-      val fRes = priceRetrieverController.handleTimestampBasedRequest(List(ts), wbtc2Addy)(chain)
+      val fRes = priceRetrieverController.handleTimestampBasedRequest(List(ts), wbtc2Addy, withHistory = false)(chain)
       val res = Await.result(fRes, 10.seconds)
       res.size shouldBe 1
       res.head.isRight shouldBe true
@@ -43,7 +43,7 @@ class IntegrationTest extends AnyFeatureSpecLike with Matchers with LazyLogging 
       val t0 = System.currentTimeMillis()
       val tss = (1624442857 to 1632932383).filter(p => p % 100000 == 0).toList
       println(tss.size)
-      val fRes = priceRetrieverController.handleTimestampBasedRequest(tss, wbtc2Addy)(chain)
+      val fRes = priceRetrieverController.handleTimestampBasedRequest(tss, wbtc2Addy, withHistory = false)(chain)
       val res = Await.result(fRes, 10.seconds)
       //      res.size shouldBe 50
       for (r <- res) {
@@ -60,7 +60,7 @@ class IntegrationTest extends AnyFeatureSpecLike with Matchers with LazyLogging 
       for (i <- 0 to 10) {
         val tss = (1624442857 + i * 11 to 1632932383 + i * 23).filter(p => p % 100000 == 0).toList
         println(tss.size)
-        val fRes = priceRetrieverController.handleTimestampBasedRequest(tss, wbtc2Addy)(chain)
+        val fRes = priceRetrieverController.handleTimestampBasedRequest(tss, wbtc2Addy, withHistory = false)(chain)
         val res = Await.result(fRes, 10.seconds)
         //      res.size shouldBe 50
         for (r <- res) {

@@ -5,7 +5,7 @@ import com.chartsbot.services.MySQLConnector
 import com.github.mauricio.async.db.mysql.exceptions.MySQLException
 import com.github.mauricio.async.db.mysql.message.server.ErrorMessage
 import com.typesafe.scalalogging.LazyLogging
-import io.getquill.{ CamelCase, MysqlAsyncContext, Ord }
+import io.getquill.{ CamelCase, MirrorSqlDialect, MysqlAsyncContext, Ord, Query, SqlMirrorContext }
 
 import javax.inject.{ Inject, Singleton }
 import scala.concurrent.{ ExecutionContext, Future }

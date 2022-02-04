@@ -34,25 +34,25 @@ class ApiPrice @Inject() (priceRetrieverController: PriceRetrieverController, im
 
   // post /polygon/prices?address=fjeihgr&timeType=timestamp
   post("/polygon") {
-    logger.info(s"Request /api/v1/prices/polygon/${paramsToString}")
+    logger.info(s"Request /api/v1/prices/polygon/$paramsToString")
     val chain = SupportedChains.Polygon
     handleQuery(chain)
   }
 
   post("/bsc") {
-    logger.info(s"Request /api/v1/prices/bsc/${paramsToString}")
+    logger.info(s"Request /api/v1/prices/bsc/$paramsToString")
     val chain = SupportedChains.Bsc
     handleQuery(chain)
   }
 
   post("/eth") {
-    logger.info(s"Request /api/v1/prices/eth/${paramsToString}")
+    logger.info(s"Request /api/v1/prices/eth/$paramsToString")
     val chain = SupportedChains.Eth
     handleQuery(chain)
   }
 
   post("/ftm") {
-    logger.info(s"Request /api/v1/prices/eth/${paramsToString}")
+    logger.info(s"Request /api/v1/prices/eth/$paramsToString")
     val chain = SupportedChains.Ftm
     handleQuery(chain)
   }
@@ -65,6 +65,13 @@ class ApiPrice @Inject() (priceRetrieverController: PriceRetrieverController, im
   def handleQuery(chain: SupportedChains): Object = {
     val optionTimeType = params.get("timeType")
     val optionAddress = params.get("address")
+    val optionWithHistory = params.get("history") match {
+      case Some(value) => value.toLowerCase() match {
+        case "true" => true
+        case _ => false
+      }
+      case None => false
+    }
     val maybeTimes = Try(request.body.split(",").map(_.toInt).toList)
     maybeTimes match {
       case Failure(_) =>
@@ -78,9 +85,9 @@ class ApiPrice @Inject() (priceRetrieverController: PriceRetrieverController, im
                 case Some(value) =>
                   value.toLowerCase match {
                     case "timestamp" =>
-                      priceRetrieverController.handleTimestampBasedRequest(times, maybeValidAddress)(chain)
+                      priceRetrieverController.handleTimestampBasedRequest(times, maybeValidAddress, optionWithHistory)(chain)
                     case "blocknumbers" =>
-                      priceRetrieverController.handleBlockNumberBaseRequest(times, maybeValidAddress)(chain)
+                      priceRetrieverController.handleBlockNumberBaseRequest(times, maybeValidAddress, optionWithHistory)(chain)
                     case _ =>
                       val serverError = createServerError(Elements.WRONG_DEF_ERROR, s"timeType argument should either be timestamp or blocknumbers, not $value")
                       BadRequest(serverError)
