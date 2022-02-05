@@ -97,7 +97,7 @@ class DefaultPriceRetrieverController @Inject() (oracleDAO: OracleDAO, sqlBlocks
 
       Future.sequence(a)
     }
-
+    fR.onComplete(_ => logger.debug(s"finished getting values for size ts of ${timestamps.size} on chain $chain"))
     storeData(token, fR)(chain)
 
     for {
@@ -113,7 +113,7 @@ class DefaultPriceRetrieverController @Inject() (oracleDAO: OracleDAO, sqlBlocks
     val upperBoundTs = blockNumbers.max
 
     val alreadyQueried: Future[List[PriceAtBlock]] = if (withHistory) {
-      sqlPricesDAO.getRangeOfTs(tokenAddy = token, from = lowerBoundTs.toLong, to = upperBoundTs.toLong)(chain)
+      sqlPricesDAO.getRangeOfBlockNumber(tokenAddy = token, from = lowerBoundTs.toLong, to = upperBoundTs.toLong)(chain)
         .map(
           _.map(_.toPriceAtBlock).toList
         )

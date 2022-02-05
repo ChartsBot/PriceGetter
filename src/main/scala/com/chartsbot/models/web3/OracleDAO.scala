@@ -91,7 +91,9 @@ class DefaultOracleDAO @Inject() (web3Connector: Web3Connector, conf: Config, im
         }
     }
 
-    Future.sequence(res)
+    val r = Future.sequence(res)
+    r.onComplete(_ => logger.debug(s"finished getting oracle values token $tokenAddress numValues = ${blocks.size} on chain $chain"))
+    r
 
   }
 

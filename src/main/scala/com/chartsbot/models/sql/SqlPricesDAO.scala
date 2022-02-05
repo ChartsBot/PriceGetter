@@ -2,6 +2,7 @@ package com.chartsbot.models.sql
 
 import com.chartsbot.models.SupportedChains.SupportedChains
 import com.chartsbot.services.MySQLConnector
+import com.typesafe.scalalogging.LazyLogging
 import slick.jdbc.MySQLProfile.api._
 
 import javax.inject.{Inject, Singleton}
@@ -16,12 +17,12 @@ trait SqlPricesDAO extends PricesTables {
 
   def getRangeOfBlockNumber(tokenAddy: String, from: Long, to: Long)(chain: SupportedChains): Future[Seq[TokenPricesRow]]
 
-  def addValues(tokenAddy: String, values: Seq[TokenPricesRow])(chain: SupportedChains): Unit
+  def addValues(tokenAddy: String, values: Seq[TokenPricesRow])(chain: SupportedChains): Future[Unit]
 
 }
 
 @Singleton
-class DefaultSqlPricesDAO @Inject () (val sqlConnector: MySQLConnector, implicit val ec: ExecutionContext) extends SqlPricesDAO {
+class DefaultSqlPricesDAO @Inject () (val sqlConnector: MySQLConnector, implicit val ec: ExecutionContext) extends SqlPricesDAO with LazyLogging {
 
   override val profile = slick.jdbc.MySQLProfile
 
@@ -39,7 +40,7 @@ class DefaultSqlPricesDAO @Inject () (val sqlConnector: MySQLConnector, implicit
     } yield p
 
     val r: Future[Seq[TokenPricesRow]] = db.run(q.result)
-
+    r.onComplete(_ => logger.info("finished getting db data"))
     r
 
 
@@ -55,13 +56,13 @@ class DefaultSqlPricesDAO @Inject () (val sqlConnector: MySQLConnector, implicit
     } yield p
 
     val r: Future[Seq[TokenPricesRow]] = db.run(q.result)
-
+    r.onComplete(_ => logger.info("finished getting db data"))
     r
 
 
   }
 
-  def addValues(tokenAddy: String, values: Seq[TokenPricesRow])(chain: SupportedChains): Unit = {
+  def addValues(tokenAddy: String, values: Seq[TokenPricesRow])(chain: SupportedChains): Future[Unit] = {
 
     val db = sqlConnector.slickDbConnectionPriceDb
     val tokenPrices = getTokenInfo(tokenAddy)(chain)
@@ -72,7 +73,9 @@ class DefaultSqlPricesDAO @Inject () (val sqlConnector: MySQLConnector, implicit
       tokenPrices ++= values,
     )
 
-    db.run(addValuesAction)
+    val r = db.run(addValuesAction)
+    r.onComplete(_ => logger.info("finished storing data to db"))
+    r
 
   }
 
