@@ -1,7 +1,7 @@
 package com.chartsbot
 
 import com.chartsbot.controlers.{ DefaultPriceRetrieverController, PriceRetrieverController }
-import com.chartsbot.models.sql.{ DefaultSqlBlocksDAO, SqlBlocksDAO }
+import com.chartsbot.models.sql.{ DefaultSqlBlocksDAO, DefaultSqlPricesDAO, SqlBlocksDAO, SqlPricesDAO }
 import com.chartsbot.models.web3.{ DefaultOracleDAO, OracleDAO }
 import com.chartsbot.services.{ ConfigProvider, DefaultMySQLConnector, DefaultWeb3Connector, ExecutionProvider, MySQLConnector, Web3Connector }
 import com.google.inject.binder.ScopedBindingBuilder
@@ -19,6 +19,7 @@ class Binder extends AbstractModule {
   def PriceRetrieverController: ScopedBindingBuilder = bind(classOf[PriceRetrieverController]).to(classOf[DefaultPriceRetrieverController])
   def SqlBlocksPolygonDAO: ScopedBindingBuilder = bind(classOf[SqlBlocksDAO]).to(classOf[DefaultSqlBlocksDAO])
   def MySQLConnector: ScopedBindingBuilder = bind(classOf[MySQLConnector]).to(classOf[DefaultMySQLConnector])
+  def SqlPricesDAO: ScopedBindingBuilder = bind(classOf[SqlPricesDAO]).to(classOf[DefaultSqlPricesDAO])
 
   override def configure(): Unit = {
     Config
@@ -28,6 +29,7 @@ class Binder extends AbstractModule {
     PriceRetrieverController
     SqlBlocksPolygonDAO
     MySQLConnector
+    SqlPricesDAO
   }
 
 }

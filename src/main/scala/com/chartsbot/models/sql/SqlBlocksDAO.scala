@@ -5,7 +5,7 @@ import com.chartsbot.services.MySQLConnector
 import com.github.mauricio.async.db.mysql.exceptions.MySQLException
 import com.github.mauricio.async.db.mysql.message.server.ErrorMessage
 import com.typesafe.scalalogging.LazyLogging
-import io.getquill.{ CamelCase, MysqlAsyncContext, Ord }
+import io.getquill.{ CamelCase, MirrorSqlDialect, MysqlAsyncContext, Ord, Query, SqlMirrorContext }
 
 import javax.inject.{ Inject, Singleton }
 import scala.concurrent.{ ExecutionContext, Future }
@@ -254,11 +254,27 @@ class DefaultSqlBlocksDAO @Inject() (val sqlBlocksEthQueries: SqlBlocksEthQuerie
     }
   }
 
-  def getLastBlock(chain: SupportedChains): Future[Either[ErrorMessage, List[SqlBlock]]] = selectChainSqlQueries(chain).getLast
+  def getLastBlock(chain: SupportedChains): Future[Either[ErrorMessage, List[SqlBlock]]] = {
+    val r = selectChainSqlQueries(chain).getLast
+    r.onComplete(_ => logger.debug(s"finished getting last block for chain $chain"))
+    r
+  }
 
-  def getClosest(ts: Int)(chain: SupportedChains): Future[Either[ErrorMessage, List[SqlBlock]]] = selectChainSqlQueries(chain).getClosest(ts)
+  def getClosest(ts: Int)(chain: SupportedChains): Future[Either[ErrorMessage, List[SqlBlock]]] = {
+    val r = selectChainSqlQueries(chain).getClosest(ts)
+    r.onComplete(_ => logger.debug(s"finished getting block closest ts $ts on chain $chain"))
+    r
+  }
 
-  def getTable(chain: SupportedChains): Future[Either[ErrorMessage, List[SqlBlock]]] = selectChainSqlQueries(chain).getTable
+  def getTable(chain: SupportedChains): Future[Either[ErrorMessage, List[SqlBlock]]] = {
+    val r = selectChainSqlQueries(chain).getTable
+    r.onComplete(_ => logger.debug(s"finished getting table on chain $chain"))
+    r
+  }
 
-  def getRangeOfTs(from: Int, to: Int)(chain: SupportedChains): Future[Either[ErrorMessage, List[SqlBlock]]] = selectChainSqlQueries(chain).getRangeOfTs(from, to)
+  def getRangeOfTs(from: Int, to: Int)(chain: SupportedChains): Future[Either[ErrorMessage, List[SqlBlock]]] = {
+    val r = selectChainSqlQueries(chain).getRangeOfTs(from, to)
+    r.onComplete(_ => logger.debug(s"finished getting SQL blocknumbers from range of ts $from - $to on chain $chain"))
+    r
+  }
 }

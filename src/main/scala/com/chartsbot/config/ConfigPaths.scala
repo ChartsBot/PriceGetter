@@ -46,9 +46,12 @@ object ConfigPaths {
   }
 
   trait SqlPaths {
-    final val MYSQL_CONNECTION_PATH = "sql.connection.path"
-    final val MYSQL_CONNECTION_USERNAME = "sql.connection.username"
-    final val MYSQL_CONNECTION_PASSWORD = "sql.connection.password"
+    final val MYSQL_CONNECTION_PATH_BLOCK_INDEXER = "sql.block-indexer.connection.path"
+    final val MYSQL_CONNECTION_USERNAME_BLOCK_INDEXER = "sql.block-indexer.connection.username"
+    final val MYSQL_CONNECTION_PASSWORD_BLOCK_INDEXER = "sql.block-indexer.connection.password"
+    final val MYSQL_CONNECTION_PATH_PRICE_DB = "sql.price-db.connection.path"
+    final val MYSQL_CONNECTION_USERNAME_PRICE_DB = "sql.price-db.connection.username"
+    final val MYSQL_CONNECTION_PASSWORD_PRICE_DB = "sql.price-db.connection.password"
   }
 
 }
